@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: gestionate-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/gestionate_db
+    username: gestionate_user
+    password: gestionate_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+supabase:
+  url: ${SUPABASE_URL:}
+  key: ${SUPABASE_KEY:}
+  bucket: ${SUPABASE_BUCKET:report-evidences}
