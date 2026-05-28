@@ -1,5 +1,5 @@
 # Maven
-target/
+/target/
 
 # Environment variables
 .env
@@ -7,3 +7,8 @@ target/
 .env.dev
 .env.test
 .env.prod
+
+.settings
+.classpath
+.factorypath
+.project
