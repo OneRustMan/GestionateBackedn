@@ -1,0 +1,9 @@
+# Maven
+target/
+
+# Environment variables
+.env
+.env.local
+.env.dev
+.env.test
+.env.prod
