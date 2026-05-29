@@ -13,9 +13,9 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pagoya_pgadmin
+    container_name: gestionate_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pagoya.com
+      PGADMIN_DEFAULT_EMAIL: admin@gestionate.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - '8082:80'
