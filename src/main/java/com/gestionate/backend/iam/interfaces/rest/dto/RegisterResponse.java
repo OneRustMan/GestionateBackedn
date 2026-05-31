@@ -7,6 +7,5 @@ public record RegisterResponse(
         Long profileId,
         UserRole role,
         String fullName,
-        String email,
-        String message) {
+        String email) {
 }

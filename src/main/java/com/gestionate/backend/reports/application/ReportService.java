@@ -5,6 +5,7 @@ import com.gestionate.backend.iam.domain.repository.CitizenRepository;
 import com.gestionate.backend.reports.domain.model.Report;
 import com.gestionate.backend.reports.domain.model.ReportStatus;
 import com.gestionate.backend.reports.domain.repository.ReportRepository;
+import com.gestionate.backend.reports.infrastructure.mapping.ReportMapper;
 import com.gestionate.backend.reports.interfaces.rest.dto.CreateReportRequest;
 import com.gestionate.backend.reports.interfaces.rest.dto.ReportResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +18,13 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class ReportService {
+public class ReportService implements IReportService {
 
     private final ReportRepository reportRepository;
     private final CitizenRepository citizenRepository;
+    private final ReportMapper reportMapper;
 
+    @Override
     @Transactional
     public ReportResponse createReport(CreateReportRequest request) {
         Citizen citizen = citizenRepository.findById(request.citizenId())
@@ -42,46 +45,15 @@ public class ReportService {
 
         Report savedReport = reportRepository.save(report);
 
-        return toResponse(savedReport, "Reporte registrado correctamente.");
+        return reportMapper.toResponse(savedReport);
     }
 
     private String generateReportCode() {
-        long nextNumber = reportRepository.findTopByOrderByIdDesc()
-                .map(Report::getReportCode)
-                .map(this::extractReportNumber)
-                .orElse(0L) + 1;
+        Long nextNumber = reportRepository.findTopByOrderByIdDesc()
+                .map(report -> report.getId() + 1)
+                .orElse(1L);
 
-        String reportCode;
-
-        do {
-            reportCode = String.format("REPT-%05d", nextNumber);
-            nextNumber++;
-        } while (reportRepository.existsByReportCode(reportCode));
-
-        return reportCode;
+        return String.format("REPT-%05d", nextNumber);
     }
 
-    private long extractReportNumber(String reportCode) {
-        if (reportCode == null || !reportCode.startsWith("REPT-")) {
-            return 0L;
-        }
-
-        try {
-            return Long.parseLong(reportCode.substring(5));
-        } catch (NumberFormatException exception) {
-            return 0L;
-        }
-    }
-
-    private ReportResponse toResponse(Report report, String message) {
-        return new ReportResponse(
-                report.getId(),
-                report.getReportCode(),
-                report.getCitizen().getId(),
-                report.getDescription(),
-                report.getStatus().name(),
-                report.getCreatedAt(),
-                report.getUpdatedAt(),
-                message);
-    }
 }

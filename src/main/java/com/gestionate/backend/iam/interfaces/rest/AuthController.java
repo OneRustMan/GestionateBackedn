@@ -1,13 +1,17 @@
 package com.gestionate.backend.iam.interfaces.rest;
 
-import com.gestionate.backend.iam.application.UserRegistrationService;
+import com.gestionate.backend.iam.application.IUserRegistrationService;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCitizenRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,11 +19,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Auth", description = "Registro, login, refresh, logout y logout-all")
 public class AuthController {
 
-    private final UserRegistrationService userRegistrationService;
+    private final IUserRegistrationService userRegistrationService;
 
+    @Operation(summary = "Registrar ciudadano")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Ciudadano registrado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o contraseñas no coinciden"),
+            @ApiResponse(responseCode = "409", description = "Correo o DNI ya registrado")
+    })
     @PostMapping("/register/citizen")
-    @ResponseStatus(HttpStatus.CREATED)
-    public RegisterResponse registerCitizen(@Valid @RequestBody RegisterCitizenRequest request) {
-        return userRegistrationService.registerCitizen(request);
+    public ResponseEntity<RegisterResponse> registerCitizen(
+            @Valid @RequestBody RegisterCitizenRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userRegistrationService.registerCitizen(request));
     }
 }

@@ -10,7 +10,5 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     Optional<Report> findTopByOrderByIdDesc();
 
-    boolean existsByReportCode(String reportCode);
-
     List<Report> findByCitizen_Id(Long citizenId);
 }
