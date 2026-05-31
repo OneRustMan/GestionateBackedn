@@ -9,6 +9,5 @@ public record ReportResponse(
         String description,
         String status,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt,
-        String message) {
+        LocalDateTime updatedAt) {
 }
