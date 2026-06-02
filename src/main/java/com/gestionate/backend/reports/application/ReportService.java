@@ -1,5 +1,7 @@
 package com.gestionate.backend.reports.application;
 
+import com.gestionate.backend.evidences.application.EvidenceService;
+import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import com.gestionate.backend.iam.domain.repository.CitizenRepository;
 import com.gestionate.backend.reports.domain.model.IncidentType;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -30,11 +33,12 @@ public class ReportService implements IReportService {
     private final CitizenRepository citizenRepository;
     private final IncidentTypeService incidentTypeService;
     private final ReportIncidentTypeRepository reportIncidentTypeRepository;
+    private final EvidenceService evidenceService;
     private final ReportMapper reportMapper;
 
     @Override
     @Transactional
-    public ReportResponse createReport(CreateReportRequest request) {
+    public ReportResponse createReport(CreateReportRequest request, List<MultipartFile> files) {
         Citizen citizen = citizenRepository.findById(request.citizenId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -67,7 +71,9 @@ public class ReportService implements IReportService {
 
         savedReport.setReportIncidentTypes(new LinkedHashSet<>(savedReportIncidentTypes));
 
-        return reportMapper.toResponse(savedReport);
+        List<Evidence> savedEvidences = evidenceService.saveReportEvidences(savedReport, files);
+
+        return reportMapper.toResponse(savedReport, savedEvidences);
     }
 
     private String generateReportCode() {
