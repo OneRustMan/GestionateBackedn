@@ -1,5 +1,7 @@
 package com.gestionate.backend.reports.domain.model;
 
+import java.util.HashSet;
+import java.util.Set;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,4 +41,7 @@ public class Report {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ReportIncidentType> reportIncidentTypes = new HashSet<>();
 }
