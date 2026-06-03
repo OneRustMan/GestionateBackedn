@@ -5,6 +5,7 @@ import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import com.gestionate.backend.iam.domain.repository.CitizenRepository;
 import com.gestionate.backend.reports.domain.model.IncidentType;
+import com.gestionate.backend.reports.domain.model.Location;
 import com.gestionate.backend.reports.domain.model.Report;
 import com.gestionate.backend.reports.domain.model.ReportIncidentType;
 import com.gestionate.backend.reports.domain.model.ReportStatus;
@@ -33,6 +34,7 @@ public class ReportService implements IReportService {
     private final CitizenRepository citizenRepository;
     private final IncidentTypeService incidentTypeService;
     private final ReportIncidentTypeRepository reportIncidentTypeRepository;
+    private final LocationService locationService;
     private final EvidenceService evidenceService;
     private final ReportMapper reportMapper;
 
@@ -71,9 +73,17 @@ public class ReportService implements IReportService {
 
         savedReport.setReportIncidentTypes(new LinkedHashSet<>(savedReportIncidentTypes));
 
+        Location savedLocation = locationService.saveReportLocation(
+                savedReport,
+                request.districtName(),
+                request.province(),
+                request.addressReference(),
+                request.latitude(),
+                request.longitude());
+
         List<Evidence> savedEvidences = evidenceService.saveReportEvidences(savedReport, files);
 
-        return reportMapper.toResponse(savedReport, savedEvidences);
+        return reportMapper.toResponse(savedReport, savedEvidences, savedLocation);
     }
 
     private String generateReportCode() {

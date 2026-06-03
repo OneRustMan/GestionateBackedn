@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -30,7 +28,7 @@ public class ReportController {
 
     private final IReportService reportService;
 
-    @Operation(summary = "Crear reporte ciudadano con tipos de incidencia y evidencias fotográficas")
+    @Operation(summary = "Crear reporte ciudadano con tipos de incidencia, evidencias y ubicación")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Reporte ciudadano registrado correctamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
@@ -44,11 +42,26 @@ public class ReportController {
 
             @RequestParam @NotEmpty(message = "Debe seleccionar al menos un tipo de incidencia.") List<@NotNull(message = "El id del tipo de incidencia no puede ser nulo.") Long> incidentTypeIds,
 
+            @RequestParam @NotBlank(message = "El distrito es obligatorio.") @Size(max = 100, message = "El distrito no puede superar los 100 caracteres.") String districtName,
+
+            @RequestParam @NotBlank(message = "La provincia es obligatoria.") @Size(max = 100, message = "La provincia no puede superar los 100 caracteres.") String province,
+
+            @RequestParam @NotBlank(message = "La referencia de dirección es obligatoria.") @Size(max = 255, message = "La referencia de dirección no puede superar los 255 caracteres.") String addressReference,
+
+            @RequestParam @NotNull(message = "La latitud es obligatoria.") @DecimalMin(value = "-90.0", message = "La latitud debe ser mayor o igual a -90.") @DecimalMax(value = "90.0", message = "La latitud debe ser menor o igual a 90.") BigDecimal latitude,
+
+            @RequestParam @NotNull(message = "La longitud es obligatoria.") @DecimalMin(value = "-180.0", message = "La longitud debe ser mayor o igual a -180.") @DecimalMax(value = "180.0", message = "La longitud debe ser menor o igual a 180.") BigDecimal longitude,
+
             @RequestPart("files") @NotEmpty(message = "Debe adjuntar al menos una evidencia fotográfica.") @Size(max = 3, message = "Solo puede adjuntar como máximo 3 evidencias fotográficas.") List<MultipartFile> files) {
         CreateReportRequest request = new CreateReportRequest(
                 citizenId,
                 description,
-                incidentTypeIds);
+                incidentTypeIds,
+                districtName,
+                province,
+                addressReference,
+                latitude,
+                longitude);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
