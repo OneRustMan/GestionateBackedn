@@ -13,6 +13,7 @@ public record ReportResponse(
         String status,
         List<IncidentTypeResponse> incidentTypes,
         List<EvidenceResponse> evidences,
+        LocationResponse location,
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
 }
