@@ -134,6 +134,22 @@ public class ReportService implements IReportService {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ReportResponse findCitizenReportDetail(Long citizenId, Long reportId) {
+        Report report = reportRepository.findByIdAndCitizen_Id(reportId, citizenId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Reporte no encontrado para el ciudadano indicado."));
+
+        List<Evidence> evidences = evidenceRepository.findByReport_Id(report.getId());
+
+        Location location = locationRepository.findByReport_Id(report.getId())
+                .orElse(null);
+
+        return reportMapper.toResponse(report, evidences, location);
+    }
+
     private String generateReportCode() {
         Long nextNumber = reportRepository.findTopByOrderByIdDesc()
                 .map(report -> report.getId() + 1)
