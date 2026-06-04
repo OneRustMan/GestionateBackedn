@@ -85,4 +85,17 @@ public class ReportController {
         return ResponseEntity.ok(
                 reportService.findCitizenReportHistory(citizenId, status, incidentTypeId));
     }
+
+    @Operation(summary = "Ver detalle de un reporte del historial de un ciudadano")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Detalle del reporte obtenido correctamente"),
+            @ApiResponse(responseCode = "404", description = "Reporte no encontrado para el ciudadano indicado")
+    })
+    @GetMapping("/citizens/{citizenId}/history/{reportId}")
+    public ResponseEntity<ReportResponse> findCitizenReportDetail(
+            @PathVariable Long citizenId,
+            @PathVariable Long reportId) {
+        return ResponseEntity.ok(
+                reportService.findCitizenReportDetail(citizenId, reportId));
+    }
 }
