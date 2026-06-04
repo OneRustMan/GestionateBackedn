@@ -1,5 +1,6 @@
 package com.gestionate.backend.reports.interfaces.rest;
 
+import com.gestionate.backend.reports.domain.model.ReportStatus;
 import com.gestionate.backend.reports.application.IReportService;
 import com.gestionate.backend.reports.interfaces.rest.dto.CreateReportRequest;
 import com.gestionate.backend.reports.interfaces.rest.dto.ReportResponse;
@@ -66,5 +67,22 @@ public class ReportController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(reportService.createReport(request, files));
+    }
+
+    @Operation(summary = "Ver historial de reportes de un ciudadano")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Historial de reportes obtenido correctamente"),
+            @ApiResponse(responseCode = "400", description = "Filtros inválidos"),
+            @ApiResponse(responseCode = "404", description = "Ciudadano no encontrado")
+    })
+    @GetMapping("/citizens/{citizenId}/history")
+    public ResponseEntity<List<ReportResponse>> findCitizenReportHistory(
+            @PathVariable Long citizenId,
+
+            @RequestParam(required = false) ReportStatus status,
+
+            @RequestParam(required = false) Long incidentTypeId) {
+        return ResponseEntity.ok(
+                reportService.findCitizenReportHistory(citizenId, status, incidentTypeId));
     }
 }

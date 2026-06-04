@@ -2,6 +2,7 @@ package com.gestionate.backend.reports.application;
 
 import com.gestionate.backend.evidences.application.EvidenceService;
 import com.gestionate.backend.evidences.domain.model.Evidence;
+import com.gestionate.backend.evidences.domain.repository.EvidenceRepository;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import com.gestionate.backend.iam.domain.repository.CitizenRepository;
 import com.gestionate.backend.reports.domain.model.IncidentType;
@@ -9,6 +10,7 @@ import com.gestionate.backend.reports.domain.model.Location;
 import com.gestionate.backend.reports.domain.model.Report;
 import com.gestionate.backend.reports.domain.model.ReportIncidentType;
 import com.gestionate.backend.reports.domain.model.ReportStatus;
+import com.gestionate.backend.reports.domain.repository.LocationRepository;
 import com.gestionate.backend.reports.domain.repository.ReportIncidentTypeRepository;
 import com.gestionate.backend.reports.domain.repository.ReportRepository;
 import com.gestionate.backend.reports.infrastructure.mapping.ReportMapper;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +36,9 @@ public class ReportService implements IReportService {
     private final IncidentTypeService incidentTypeService;
     private final ReportIncidentTypeRepository reportIncidentTypeRepository;
     private final LocationService locationService;
+    private final LocationRepository locationRepository;
     private final EvidenceService evidenceService;
+    private final EvidenceRepository evidenceRepository;
     private final ReportMapper reportMapper;
 
     @Override
@@ -84,6 +87,51 @@ public class ReportService implements IReportService {
         List<Evidence> savedEvidences = evidenceService.saveReportEvidences(savedReport, files);
 
         return reportMapper.toResponse(savedReport, savedEvidences, savedLocation);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReportResponse> findCitizenReportHistory(
+            Long citizenId,
+            ReportStatus status,
+            Long incidentTypeId) {
+        if (!citizenRepository.existsById(citizenId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Ciudadano no encontrado.");
+        }
+
+        if (status != null && incidentTypeId != null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Solo puede aplicar un filtro a la vez.");
+        }
+
+        List<Report> reports;
+
+        if (status != null) {
+            reports = reportRepository.findByCitizen_IdAndStatusOrderByCreatedAtDesc(
+                    citizenId,
+                    status);
+        } else if (incidentTypeId != null) {
+            reports = reportRepository
+                    .findDistinctByCitizen_IdAndReportIncidentTypes_IncidentType_IdOrderByCreatedAtDesc(
+                            citizenId,
+                            incidentTypeId);
+        } else {
+            reports = reportRepository.findByCitizen_IdOrderByCreatedAtDesc(citizenId);
+        }
+
+        return reports.stream()
+                .map(report -> {
+                    List<Evidence> evidences = evidenceRepository.findByReport_Id(report.getId());
+
+                    Location location = locationRepository.findByReport_Id(report.getId())
+                            .orElse(null);
+
+                    return reportMapper.toResponse(report, evidences, location);
+                })
+                .toList();
     }
 
     private String generateReportCode() {
