@@ -1,5 +1,6 @@
 package com.gestionate.backend.reception.interfaces.rest;
 
+import com.gestionate.backend.reception.interfaces.rest.dto.ReceptionReportDetailResponse;
 import com.gestionate.backend.reception.application.IReceptionReportService;
 import com.gestionate.backend.reception.interfaces.rest.dto.ReceptionReportInboxResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,5 +31,18 @@ public class ReceptionReportController {
             @RequestParam Long receptionistId) {
         return ResponseEntity.ok(
                 receptionReportService.findReportInbox(receptionistId));
+    }
+
+    @Operation(summary = "Revisar detalle de un reporte ciudadano")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Detalle del reporte obtenido correctamente"),
+            @ApiResponse(responseCode = "404", description = "El reporte ya no está disponible")
+    })
+    @GetMapping("/{reportId}/detail")
+    public ResponseEntity<ReceptionReportDetailResponse> findReportDetail(
+            @PathVariable Long reportId,
+            @RequestParam Long receptionistId) {
+        return ResponseEntity.ok(
+                receptionReportService.findReportDetail(receptionistId, reportId));
     }
 }
