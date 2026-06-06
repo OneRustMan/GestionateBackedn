@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.gestionate.backend.workorders.domain.model.WorkOrderPriority;
 import java.util.List;
 
 @RestController
@@ -27,8 +27,10 @@ public class WorkOrderController {
     })
     @GetMapping("/available")
     public ResponseEntity<List<WorkOrderResponse>> findAvailableWorkOrders(
-            @RequestParam Long cleaningStaffId) {
+            @RequestParam Long cleaningStaffId,
+
+            @RequestParam(required = false) WorkOrderPriority priority) {
         return ResponseEntity.ok(
-                workOrderService.findAvailableWorkOrders(cleaningStaffId));
+                workOrderService.findAvailableWorkOrders(cleaningStaffId, priority));
     }
 }
