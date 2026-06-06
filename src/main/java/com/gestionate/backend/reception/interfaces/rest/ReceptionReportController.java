@@ -21,16 +21,13 @@ public class ReceptionReportController {
 
     private final IReceptionReportService receptionReportService;
 
-    @Operation(summary = "Ver bandeja de reportes ciudadanos recibidos")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Bandeja de reportes obtenida correctamente"),
-            @ApiResponse(responseCode = "404", description = "Recepcionista municipal no encontrado")
-    })
     @GetMapping("/inbox")
     public ResponseEntity<List<ReceptionReportInboxResponse>> findReportInbox(
-            @RequestParam Long receptionistId) {
+            @RequestParam Long receptionistId,
+
+            @RequestParam(required = false) Long incidentTypeId) {
         return ResponseEntity.ok(
-                receptionReportService.findReportInbox(receptionistId));
+                receptionReportService.findReportInbox(receptionistId, incidentTypeId));
     }
 
     @Operation(summary = "Revisar detalle de un reporte ciudadano")
