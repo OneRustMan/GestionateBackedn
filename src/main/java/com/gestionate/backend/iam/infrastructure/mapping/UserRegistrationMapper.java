@@ -1,5 +1,6 @@
 package com.gestionate.backend.iam.infrastructure.mapping;
 
+import com.gestionate.backend.iam.domain.model.CleaningOperationsStaff;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import com.gestionate.backend.iam.domain.model.MunicipalReceptionist;
 import com.gestionate.backend.iam.domain.model.User;
@@ -23,4 +24,11 @@ public interface UserRegistrationMapper {
     @Mapping(target = "fullName", expression = "java(user.getFirstName() + \" \" + user.getLastName())")
     @Mapping(target = "email", source = "user.email")
     RegisterResponse toRegisterResponse(User user, MunicipalReceptionist municipalReceptionist);
+
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "profileId", source = "cleaningOperationsStaff.id")
+    @Mapping(target = "role", source = "user.role")
+    @Mapping(target = "fullName", expression = "java(user.getFirstName() + \" \" + user.getLastName())")
+    @Mapping(target = "email", source = "user.email")
+    RegisterResponse toRegisterResponse(User user, CleaningOperationsStaff cleaningOperationsStaff);
 }
