@@ -32,7 +32,9 @@ public class ReceptionReportService implements IReceptionReportService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReceptionReportInboxResponse> findReportInbox(Long receptionistId) {
+    public List<ReceptionReportInboxResponse> findReportInbox(
+            Long receptionistId,
+            Long incidentTypeId) {
         MunicipalReceptionist receptionist = municipalReceptionistRepository.findById(receptionistId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -40,10 +42,20 @@ public class ReceptionReportService implements IReceptionReportService {
 
         Long districtId = receptionist.getMunicipality().getDistrict().getId();
 
-        List<Location> locations = locationRepository
-                .findByDistrict_IdAndReport_StatusOrderByReport_CreatedAtDesc(
-                        districtId,
-                        ReportStatus.RECEIVED);
+        List<Location> locations;
+
+        if (incidentTypeId != null) {
+            locations = locationRepository
+                    .findByDistrict_IdAndReport_StatusAndReport_ReportIncidentTypes_IncidentType_IdOrderByReport_CreatedAtDesc(
+                            districtId,
+                            ReportStatus.RECEIVED,
+                            incidentTypeId);
+        } else {
+            locations = locationRepository
+                    .findByDistrict_IdAndReport_StatusOrderByReport_CreatedAtDesc(
+                            districtId,
+                            ReportStatus.RECEIVED);
+        }
 
         return locations.stream()
                 .map(location -> receptionReportInboxMapper.toResponse(
@@ -89,4 +101,5 @@ public class ReceptionReportService implements IReceptionReportService {
                 location,
                 evidences);
     }
+
 }

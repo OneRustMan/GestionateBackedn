@@ -7,7 +7,11 @@ import java.util.List;
 
 public interface IReceptionReportService {
 
-    List<ReceptionReportInboxResponse> findReportInbox(Long receptionistId);
+    List<ReceptionReportInboxResponse> findReportInbox(
+            Long receptionistId,
+            Long incidentTypeId);
 
-    ReceptionReportDetailResponse findReportDetail(Long receptionistId, Long reportId);
+    ReceptionReportDetailResponse findReportDetail(
+            Long receptionistId,
+            Long reportId);
 }
