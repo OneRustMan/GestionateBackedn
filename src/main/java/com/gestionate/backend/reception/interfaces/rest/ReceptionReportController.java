@@ -10,7 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.gestionate.backend.reception.interfaces.rest.dto.DeriveReportRequest;
+import com.gestionate.backend.reception.interfaces.rest.dto.DeriveReportResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @RestController
@@ -41,5 +44,24 @@ public class ReceptionReportController {
             @RequestParam Long receptionistId) {
         return ResponseEntity.ok(
                 receptionReportService.findReportDetail(receptionistId, reportId));
+    }
+
+    @Operation(summary = "Derivar reporte ciudadano a limpieza pública")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Reporte derivado correctamente y orden de trabajo creada"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o reporte ya derivado"),
+            @ApiResponse(responseCode = "404", description = "Reporte no disponible o recepcionista no encontrado")
+    })
+    @PostMapping("/{reportId}/derive")
+    public ResponseEntity<DeriveReportResponse> deriveReport(
+            @PathVariable Long reportId,
+            @RequestParam Long receptionistId,
+            @Valid @RequestBody DeriveReportRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(receptionReportService.deriveReport(
+                        receptionistId,
+                        reportId,
+                        request));
     }
 }
