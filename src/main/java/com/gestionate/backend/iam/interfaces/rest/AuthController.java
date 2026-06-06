@@ -1,5 +1,6 @@
 package com.gestionate.backend.iam.interfaces.rest;
 
+import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCleaningOperationsStaffRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterMunicipalReceptionistRequest;
 import com.gestionate.backend.iam.application.IUserRegistrationService;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCitizenRequest;
@@ -48,5 +49,19 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(userRegistrationService.registerMunicipalReceptionist(request));
+    }
+
+    @Operation(summary = "Registrar personal del área operativa de limpieza pública")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Personal operativo registrado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o contraseñas no coinciden"),
+            @ApiResponse(responseCode = "409", description = "Correo, DNI o código de trabajador ya registrado")
+    })
+    @PostMapping("/register/cleaning-staff")
+    public ResponseEntity<RegisterResponse> registerCleaningOperationsStaff(
+            @Valid @RequestBody RegisterCleaningOperationsStaffRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userRegistrationService.registerCleaningOperationsStaff(request));
     }
 }

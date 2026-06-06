@@ -1,14 +1,17 @@
 package com.gestionate.backend.iam.application;
 
 import com.gestionate.backend.iam.domain.model.Citizen;
+import com.gestionate.backend.iam.domain.model.CleaningOperationsStaff;
 import com.gestionate.backend.iam.domain.model.MunicipalReceptionist;
 import com.gestionate.backend.iam.domain.model.User;
 import com.gestionate.backend.iam.domain.model.UserRole;
 import com.gestionate.backend.iam.domain.repository.CitizenRepository;
+import com.gestionate.backend.iam.domain.repository.CleaningOperationsStaffRepository;
 import com.gestionate.backend.iam.domain.repository.MunicipalReceptionistRepository;
 import com.gestionate.backend.iam.domain.repository.UserRepository;
 import com.gestionate.backend.iam.infrastructure.mapping.UserRegistrationMapper;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCitizenRequest;
+import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCleaningOperationsStaffRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterMunicipalReceptionistRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterResponse;
 import com.gestionate.backend.shared.application.DistrictService;
@@ -28,6 +31,7 @@ public class UserRegistrationService implements IUserRegistrationService {
     private final UserRepository userRepository;
     private final CitizenRepository citizenRepository;
     private final MunicipalReceptionistRepository municipalReceptionistRepository;
+    private final CleaningOperationsStaffRepository cleaningOperationsStaffRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRegistrationMapper userRegistrationMapper;
     private final DistrictService districtService;
@@ -85,7 +89,7 @@ public class UserRegistrationService implements IUserRegistrationService {
         String workerCode = TextNormalizer.normalizeUpperText(request.workerCode());
 
         validateUniqueUserData(email, dni);
-        validateUniqueWorkerCode(workerCode);
+        validateUniqueReceptionistWorkerCode(workerCode);
 
         Municipality municipality = municipalityService.resolveMunicipality(
                 request.municipalityId(),
@@ -118,6 +122,52 @@ public class UserRegistrationService implements IUserRegistrationService {
         return userRegistrationMapper.toRegisterResponse(savedUser, savedMunicipalReceptionist);
     }
 
+    @Override
+    @Transactional
+    public RegisterResponse registerCleaningOperationsStaff(RegisterCleaningOperationsStaffRequest request) {
+
+        validatePasswordsMatch(request.password(), request.confirmPassword());
+
+        String email = TextNormalizer.normalizeEmail(request.email());
+        String dni = TextNormalizer.normalizeText(request.dni());
+        String phone = TextNormalizer.normalizeText(request.phone());
+        String workerCode = TextNormalizer.normalizeUpperText(request.workerCode());
+
+        validateUniqueUserData(email, dni);
+        validateUniqueCleaningStaffWorkerCode(workerCode);
+
+        Municipality municipality = municipalityService.resolveMunicipality(
+                request.municipalityId(),
+                request.municipalityName(),
+                request.districtId(),
+                request.districtName(),
+                request.province());
+
+        User user = User.builder()
+                .firstName(TextNormalizer.normalizeText(request.firstName()))
+                .lastName(TextNormalizer.normalizeText(request.lastName()))
+                .dni(dni)
+                .phone(phone)
+                .email(email)
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .role(UserRole.CLEANING_OPERATIONS)
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        CleaningOperationsStaff cleaningOperationsStaff = CleaningOperationsStaff.builder()
+                .user(savedUser)
+                .municipality(municipality)
+                .workerCode(workerCode)
+                .shift(request.shift())
+                .build();
+
+        CleaningOperationsStaff savedCleaningOperationsStaff = cleaningOperationsStaffRepository
+                .save(cleaningOperationsStaff);
+
+        return userRegistrationMapper.toRegisterResponse(savedUser, savedCleaningOperationsStaff);
+    }
+
     private void validatePasswordsMatch(String password, String confirmPassword) {
         if (!password.equals(confirmPassword)) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
@@ -134,8 +184,14 @@ public class UserRegistrationService implements IUserRegistrationService {
         }
     }
 
-    private void validateUniqueWorkerCode(String workerCode) {
+    private void validateUniqueReceptionistWorkerCode(String workerCode) {
         if (municipalReceptionistRepository.existsByWorkerCode(workerCode)) {
+            throw new IllegalArgumentException("El código de trabajador ya está registrado.");
+        }
+    }
+
+    private void validateUniqueCleaningStaffWorkerCode(String workerCode) {
+        if (cleaningOperationsStaffRepository.existsByWorkerCode(workerCode)) {
             throw new IllegalArgumentException("El código de trabajador ya está registrado.");
         }
     }
