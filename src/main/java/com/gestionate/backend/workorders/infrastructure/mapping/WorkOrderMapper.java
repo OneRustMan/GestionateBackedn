@@ -1,5 +1,6 @@
 package com.gestionate.backend.workorders.infrastructure.mapping;
 
+import com.gestionate.backend.workorders.interfaces.rest.dto.TakeWorkOrderResponse;
 import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.evidences.infrastructure.mapping.EvidenceMapper;
 import com.gestionate.backend.reports.domain.model.Location;
@@ -58,4 +59,12 @@ public interface WorkOrderMapper {
     @Mapping(target = "displayName", source = "incidentType.name", qualifiedByName = "toDisplayName")
     @Mapping(target = "active", source = "incidentType.active")
     IncidentTypeResponse toIncidentTypeResponse(ReportIncidentType reportIncidentType);
+
+    @Mapping(target = "workOrderId", source = "id")
+    @Mapping(target = "orderCode", source = "orderCode")
+    @Mapping(target = "reportId", source = "report.id")
+    @Mapping(target = "reportCode", source = "report.reportCode")
+    @Mapping(target = "cleaningStaffId", source = "cleaningStaffId")
+    @Mapping(target = "workOrderStatus", source = "status")
+    TakeWorkOrderResponse toTakeResponse(WorkOrder workOrder);
 }

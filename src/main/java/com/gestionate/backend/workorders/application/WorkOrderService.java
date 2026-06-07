@@ -12,6 +12,7 @@ import com.gestionate.backend.workorders.domain.model.WorkOrderPriority;
 import com.gestionate.backend.workorders.domain.model.WorkOrderStatus;
 import com.gestionate.backend.workorders.domain.repository.WorkOrderRepository;
 import com.gestionate.backend.workorders.infrastructure.mapping.WorkOrderMapper;
+import com.gestionate.backend.workorders.interfaces.rest.dto.TakeWorkOrderResponse;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderDetailResponse;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderResponse;
 import lombok.RequiredArgsConstructor;
@@ -126,5 +127,49 @@ public class WorkOrderService implements IWorkOrderService {
                 workOrder,
                 location,
                 evidences);
+    }
+
+    @Override
+    @Transactional
+    public TakeWorkOrderResponse takeWorkOrder(
+            Long cleaningStaffId,
+            Long workOrderId) {
+        CleaningOperationsStaff cleaningStaff = cleaningOperationsStaffRepository.findById(cleaningStaffId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Personal operativo no encontrado."));
+
+        WorkOrder workOrder = workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "La orden ya no está disponible."));
+
+        Location location = locationRepository.findByReport_Id(workOrder.getReport().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "La orden ya no está disponible."));
+
+        Long cleaningStaffDistrictId = cleaningStaff.getMunicipality().getDistrict().getId();
+        Long reportDistrictId = location.getDistrict().getId();
+
+        if (!cleaningStaffDistrictId.equals(reportDistrictId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "La orden ya no está disponible.");
+        }
+
+        if (workOrder.getCleaningStaffId() != null
+                || !WorkOrderStatus.PENDING.equals(workOrder.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La orden ya fue asignada.");
+        }
+
+        workOrder.setCleaningStaffId(cleaningStaff.getId());
+        workOrder.setStatus(WorkOrderStatus.IN_PROGRESS);
+
+        WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+        return workOrderMapper.toTakeResponse(savedWorkOrder);
     }
 }
