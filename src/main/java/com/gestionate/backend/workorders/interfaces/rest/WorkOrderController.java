@@ -1,5 +1,6 @@
 package com.gestionate.backend.workorders.interfaces.rest;
 
+import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderDetailResponse;
 import com.gestionate.backend.workorders.application.IWorkOrderService;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,5 +33,19 @@ public class WorkOrderController {
             @RequestParam(required = false) WorkOrderPriority priority) {
         return ResponseEntity.ok(
                 workOrderService.findAvailableWorkOrders(cleaningStaffId, priority));
+    }
+
+    @Operation(summary = "Consultar detalle de una orden de trabajo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Detalle de la orden obtenido correctamente"),
+            @ApiResponse(responseCode = "400", description = "La orden requiere ubicación para ser atendida"),
+            @ApiResponse(responseCode = "404", description = "Orden no disponible o personal operativo no encontrado")
+    })
+    @GetMapping("/{workOrderId}/detail")
+    public ResponseEntity<WorkOrderDetailResponse> findWorkOrderDetail(
+            @PathVariable Long workOrderId,
+            @RequestParam Long cleaningStaffId) {
+        return ResponseEntity.ok(
+                workOrderService.findWorkOrderDetail(cleaningStaffId, workOrderId));
     }
 }
