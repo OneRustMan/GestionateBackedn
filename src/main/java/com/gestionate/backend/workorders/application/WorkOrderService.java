@@ -1,5 +1,7 @@
 package com.gestionate.backend.workorders.application;
 
+import com.gestionate.backend.evidences.domain.model.Evidence;
+import com.gestionate.backend.evidences.domain.repository.EvidenceRepository;
 import com.gestionate.backend.iam.domain.model.CleaningOperationsStaff;
 import com.gestionate.backend.iam.domain.repository.CleaningOperationsStaffRepository;
 import com.gestionate.backend.reports.domain.model.Location;
@@ -10,6 +12,7 @@ import com.gestionate.backend.workorders.domain.model.WorkOrderPriority;
 import com.gestionate.backend.workorders.domain.model.WorkOrderStatus;
 import com.gestionate.backend.workorders.domain.repository.WorkOrderRepository;
 import com.gestionate.backend.workorders.infrastructure.mapping.WorkOrderMapper;
+import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderDetailResponse;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +31,7 @@ public class WorkOrderService implements IWorkOrderService {
     private final CleaningOperationsStaffRepository cleaningOperationsStaffRepository;
     private final LocationRepository locationRepository;
     private final WorkOrderRepository workOrderRepository;
+    private final EvidenceRepository evidenceRepository;
     private final WorkOrderMapper workOrderMapper;
 
     @Override
@@ -84,5 +88,43 @@ public class WorkOrderService implements IWorkOrderService {
                     case LOW -> 3;
                 }))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WorkOrderDetailResponse findWorkOrderDetail(
+            Long cleaningStaffId,
+            Long workOrderId) {
+        CleaningOperationsStaff cleaningStaff = cleaningOperationsStaffRepository.findById(cleaningStaffId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Personal operativo no encontrado."));
+
+        WorkOrder workOrder = workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "La orden ya no está disponible."));
+
+        Location location = locationRepository.findByReport_Id(workOrder.getReport().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "La orden requiere ubicación para ser atendida."));
+
+        Long cleaningStaffDistrictId = cleaningStaff.getMunicipality().getDistrict().getId();
+        Long reportDistrictId = location.getDistrict().getId();
+
+        if (!cleaningStaffDistrictId.equals(reportDistrictId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "La orden ya no está disponible.");
+        }
+
+        List<Evidence> evidences = evidenceRepository.findByReport_Id(
+                workOrder.getReport().getId());
+
+        return workOrderMapper.toDetailResponse(
+                workOrder,
+                location,
+                evidences);
     }
 }
