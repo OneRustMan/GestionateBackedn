@@ -1,5 +1,6 @@
 package com.gestionate.backend.workorders.interfaces.rest;
 
+import com.gestionate.backend.workorders.interfaces.rest.dto.TakeWorkOrderResponse;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderDetailResponse;
 import com.gestionate.backend.workorders.application.IWorkOrderService;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderResponse;
@@ -47,5 +48,19 @@ public class WorkOrderController {
             @RequestParam Long cleaningStaffId) {
         return ResponseEntity.ok(
                 workOrderService.findWorkOrderDetail(cleaningStaffId, workOrderId));
+    }
+
+    @Operation(summary = "Tomar una orden de trabajo disponible")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Orden tomada correctamente"),
+            @ApiResponse(responseCode = "400", description = "La orden ya fue asignada"),
+            @ApiResponse(responseCode = "404", description = "Orden no disponible o personal operativo no encontrado")
+    })
+    @PatchMapping("/{workOrderId}/take")
+    public ResponseEntity<TakeWorkOrderResponse> takeWorkOrder(
+            @PathVariable Long workOrderId,
+            @RequestParam Long cleaningStaffId) {
+        return ResponseEntity.ok(
+                workOrderService.takeWorkOrder(cleaningStaffId, workOrderId));
     }
 }
