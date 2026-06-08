@@ -1,5 +1,8 @@
 package com.gestionate.backend.iam.interfaces.rest;
 
+import com.gestionate.backend.iam.application.IAuthenticationService;
+import com.gestionate.backend.iam.interfaces.rest.dto.LoginRequest;
+import com.gestionate.backend.iam.interfaces.rest.dto.LoginResponse;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterCleaningOperationsStaffRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.RegisterMunicipalReceptionistRequest;
 import com.gestionate.backend.iam.application.IUserRegistrationService;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final IUserRegistrationService userRegistrationService;
+    private final IAuthenticationService authenticationService;
 
     @Operation(summary = "Registrar ciudadano")
     @ApiResponses({
@@ -63,5 +67,17 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(userRegistrationService.registerCleaningOperationsStaff(request));
+    }
+
+    @Operation(summary = "Iniciar sesión")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Inicio de sesión correcto"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "Usuario o contraseña incorrectos")
+    })
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authenticationService.login(request));
     }
 }
