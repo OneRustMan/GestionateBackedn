@@ -1,5 +1,9 @@
 package com.gestionate.backend.iam.interfaces.rest;
 
+import com.gestionate.backend.iam.application.IPasswordRecoveryService;
+import com.gestionate.backend.iam.interfaces.rest.dto.ForgotPasswordRequest;
+import com.gestionate.backend.iam.interfaces.rest.dto.PasswordRecoveryResponse;
+import com.gestionate.backend.iam.interfaces.rest.dto.ResetPasswordRequest;
 import com.gestionate.backend.iam.application.IAuthenticationService;
 import com.gestionate.backend.iam.interfaces.rest.dto.LoginRequest;
 import com.gestionate.backend.iam.interfaces.rest.dto.LoginResponse;
@@ -23,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "Registro, login, refresh, logout y logout-all")
 public class AuthController {
-
+    private final IPasswordRecoveryService passwordRecoveryService;
     private final IUserRegistrationService userRegistrationService;
     private final IAuthenticationService authenticationService;
 
@@ -79,5 +83,29 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.login(request));
+    }
+
+    @Operation(summary = "Solicitar código de recuperación de contraseña")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Código de recuperación enviado correctamente"),
+            @ApiResponse(responseCode = "400", description = "No se pudo recuperar la contraseña")
+    })
+    @PostMapping("/password/forgot")
+    public ResponseEntity<PasswordRecoveryResponse> requestPasswordRecovery(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(
+                passwordRecoveryService.requestPasswordRecovery(request));
+    }
+
+    @Operation(summary = "Restablecer contraseña con código de recuperación")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada correctamente"),
+            @ApiResponse(responseCode = "400", description = "Código inválido, expirado o datos incorrectos")
+    })
+    @PostMapping("/password/reset")
+    public ResponseEntity<PasswordRecoveryResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(
+                passwordRecoveryService.resetPassword(request));
     }
 }
