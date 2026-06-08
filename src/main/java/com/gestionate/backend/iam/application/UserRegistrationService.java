@@ -1,5 +1,7 @@
 package com.gestionate.backend.iam.application;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import com.gestionate.backend.iam.domain.model.Citizen;
 import com.gestionate.backend.iam.domain.model.CleaningOperationsStaff;
 import com.gestionate.backend.iam.domain.model.MunicipalReceptionist;
@@ -170,29 +172,39 @@ public class UserRegistrationService implements IUserRegistrationService {
 
     private void validatePasswordsMatch(String password, String confirmPassword) {
         if (!password.equals(confirmPassword)) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Las contraseñas no coinciden.");
         }
     }
 
     private void validateUniqueUserData(String email, String dni) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("El correo electrónico ya está registrado.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Este correo ya está registrado.");
         }
 
         if (userRepository.existsByDni(dni)) {
-            throw new IllegalArgumentException("El DNI ya está registrado.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El DNI ya está registrado.");
         }
     }
 
     private void validateUniqueReceptionistWorkerCode(String workerCode) {
         if (municipalReceptionistRepository.existsByWorkerCode(workerCode)) {
-            throw new IllegalArgumentException("El código de trabajador ya está registrado.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El código de trabajador ya está registrado.");
         }
     }
 
     private void validateUniqueCleaningStaffWorkerCode(String workerCode) {
         if (cleaningOperationsStaffRepository.existsByWorkerCode(workerCode)) {
-            throw new IllegalArgumentException("El código de trabajador ya está registrado.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El código de trabajador ya está registrado.");
         }
     }
 }

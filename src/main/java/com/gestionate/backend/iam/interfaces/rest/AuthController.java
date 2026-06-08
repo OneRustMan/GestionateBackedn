@@ -27,7 +27,7 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Ciudadano registrado correctamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos o contraseñas no coinciden"),
-            @ApiResponse(responseCode = "409", description = "Correo o DNI ya registrado")
+            @ApiResponse(responseCode = "409", description = "Correo o DNI del ciudadano ya registrado")
     })
     @PostMapping("/register/citizen")
     public ResponseEntity<RegisterResponse> registerCitizen(
