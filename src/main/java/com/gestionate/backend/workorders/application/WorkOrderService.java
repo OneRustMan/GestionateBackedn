@@ -1,5 +1,11 @@
 package com.gestionate.backend.workorders.application;
 
+import com.gestionate.backend.reports.domain.model.Report;
+import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderRequest;
+import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderResponse;
+import com.gestionate.backend.shared.application.util.TextNormalizer;
+
+import java.time.LocalDateTime;
 import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.evidences.domain.repository.EvidenceRepository;
 import com.gestionate.backend.iam.domain.model.CleaningOperationsStaff;
@@ -171,5 +177,64 @@ public class WorkOrderService implements IWorkOrderService {
         WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
 
         return workOrderMapper.toTakeResponse(savedWorkOrder);
+    }
+
+    @Override
+    @Transactional
+    public CompleteWorkOrderResponse completeWorkOrder(
+            Long cleaningStaffId,
+            Long workOrderId,
+            CompleteWorkOrderRequest request) {
+        CleaningOperationsStaff cleaningStaff = cleaningOperationsStaffRepository.findById(cleaningStaffId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Personal operativo no encontrado."));
+
+        WorkOrder workOrder = workOrderRepository.findById(workOrderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No puedes completar esta orden."));
+
+        if (request == null || !TextNormalizer.hasText(request.observation())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ingresa una observación para completar la orden.");
+        }
+
+        Location location = locationRepository.findByReport_Id(workOrder.getReport().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No puedes completar esta orden."));
+
+        Long cleaningStaffDistrictId = cleaningStaff.getMunicipality().getDistrict().getId();
+        Long reportDistrictId = location.getDistrict().getId();
+
+        if (!cleaningStaffDistrictId.equals(reportDistrictId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No puedes completar esta orden.");
+        }
+
+        if (workOrder.getCleaningStaffId() == null
+                || !workOrder.getCleaningStaffId().equals(cleaningStaff.getId())
+                || !WorkOrderStatus.IN_PROGRESS.equals(workOrder.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "No puedes completar esta orden.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        workOrder.setStatus(WorkOrderStatus.COMPLETED);
+        workOrder.setObservation(TextNormalizer.normalizeText(request.observation()));
+        workOrder.setCompletedAt(now);
+
+        Report report = workOrder.getReport();
+        report.setStatus(ReportStatus.ORDER_COMPLETED);
+        report.setUpdatedAt(now);
+
+        WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+        return workOrderMapper.toCompleteResponse(savedWorkOrder);
     }
 }

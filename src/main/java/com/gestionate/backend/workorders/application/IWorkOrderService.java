@@ -1,5 +1,7 @@
 package com.gestionate.backend.workorders.application;
 
+import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderRequest;
+import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderResponse;
 import com.gestionate.backend.workorders.domain.model.WorkOrderPriority;
 import com.gestionate.backend.workorders.interfaces.rest.dto.TakeWorkOrderResponse;
 import com.gestionate.backend.workorders.interfaces.rest.dto.WorkOrderDetailResponse;
@@ -20,4 +22,9 @@ public interface IWorkOrderService {
     TakeWorkOrderResponse takeWorkOrder(
             Long cleaningStaffId,
             Long workOrderId);
+
+    CompleteWorkOrderResponse completeWorkOrder(
+            Long cleaningStaffId,
+            Long workOrderId,
+            CompleteWorkOrderRequest request);
 }
