@@ -27,3 +27,8 @@ supabase:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:gestionate_super_secret_key_2026_for_jwt_login_access_minimum_32_chars}
