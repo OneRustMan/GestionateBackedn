@@ -1,5 +1,10 @@
 package com.gestionate.backend.shared.application;
 
+import com.gestionate.backend.shared.infrastructure.mapping.DistrictMapper;
+import com.gestionate.backend.shared.interfaces.rest.dto.DistrictResponse;
+
+import java.util.Comparator;
+import java.util.List;
 import com.gestionate.backend.shared.application.util.TextNormalizer;
 import com.gestionate.backend.shared.domain.model.District;
 import com.gestionate.backend.shared.domain.repository.DistrictRepository;
@@ -12,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DistrictService implements IDistrictService {
 
     private final DistrictRepository districtRepository;
+    private final DistrictMapper districtMapper;
 
     @Override
     @Transactional
@@ -74,5 +80,15 @@ public class DistrictService implements IDistrictService {
                 .build();
 
         return districtRepository.save(district);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DistrictResponse> findActiveDistricts() {
+        return districtRepository.findByActiveTrue()
+                .stream()
+                .sorted(Comparator.comparing(District::getName))
+                .map(districtMapper::toResponse)
+                .toList();
     }
 }
