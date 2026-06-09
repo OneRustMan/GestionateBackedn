@@ -1,5 +1,6 @@
 package com.gestionate.backend.reception.application;
 
+import com.gestionate.backend.communication.application.INotificationService;
 import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.evidences.domain.repository.EvidenceRepository;
 import com.gestionate.backend.iam.domain.model.MunicipalReceptionist;
@@ -32,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReceptionReportService implements IReceptionReportService {
 
+    private final INotificationService notificationService;
     private final MunicipalReceptionistRepository municipalReceptionistRepository;
     private final LocationRepository locationRepository;
     private final EvidenceRepository evidenceRepository;
@@ -177,7 +179,12 @@ public class ReceptionReportService implements IReceptionReportService {
 
         report.setStatus(ReportStatus.DERIVED);
         report.setUpdatedAt(now);
-        reportRepository.save(report);
+        Report savedReport = reportRepository.save(report);
+
+        notificationService.notifyReportStatusChanged(
+                savedReport.getCitizen().getUser(),
+                savedReport.getReportCode(),
+                savedReport.getStatus());
 
         return deriveReportMapper.toResponse(savedWorkOrder);
     }

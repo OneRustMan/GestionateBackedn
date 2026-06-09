@@ -40,4 +40,24 @@ public class EmailService implements IEmailService {
 
         javaMailSender.send(message);
     }
+
+    @Override
+    public void sendReportStatusNotification(String to, String title, String messageContent) {
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(mailFrom);
+        message.setTo(to);
+        message.setSubject(title);
+        message.setText("""
+                Hola,
+
+                %s
+
+                Puedes revisar el estado de tu reporte desde la plataforma Gestionate.
+
+                Equipo Gestionate
+                """.formatted(messageContent));
+
+        javaMailSender.send(message);
+    }
 }

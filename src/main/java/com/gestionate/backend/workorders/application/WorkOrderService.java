@@ -1,5 +1,6 @@
 package com.gestionate.backend.workorders.application;
 
+import com.gestionate.backend.communication.application.INotificationService;
 import com.gestionate.backend.reports.domain.model.Report;
 import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderRequest;
 import com.gestionate.backend.workorders.interfaces.rest.dto.CompleteWorkOrderResponse;
@@ -40,6 +41,7 @@ public class WorkOrderService implements IWorkOrderService {
     private final WorkOrderRepository workOrderRepository;
     private final EvidenceRepository evidenceRepository;
     private final WorkOrderMapper workOrderMapper;
+    private final INotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -234,6 +236,11 @@ public class WorkOrderService implements IWorkOrderService {
         report.setUpdatedAt(now);
 
         WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+        notificationService.notifyReportStatusChanged(
+                report.getCitizen().getUser(),
+                report.getReportCode(),
+                report.getStatus());
 
         return workOrderMapper.toCompleteResponse(savedWorkOrder);
     }
