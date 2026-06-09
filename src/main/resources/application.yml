@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: gestionate-backend
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/gestionate_db}
+    username: ${DATABASE_USERNAME:gestionate_user}
+    password: ${DATABASE_PASSWORD:gestionate_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: ${FORMAT_SQL:true}
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+server:
+  port: ${PORT:8080}
+
+supabase:
+  url: ${SUPABASE_URL:}
+  key: ${SUPABASE_KEY:}
+  bucket: ${SUPABASE_BUCKET:report-evidences}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:gestionate_super_secret_key_2026_for_jwt_login_access_minimum_32_chars}
+
+mail:
+  from: ${MAIL_FROM:no-reply@gestionate.com}
