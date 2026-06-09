@@ -1,5 +1,6 @@
 package com.gestionate.backend.reports.application;
 
+import com.gestionate.backend.communication.application.INotificationService;
 import com.gestionate.backend.evidences.application.EvidenceService;
 import com.gestionate.backend.evidences.domain.model.Evidence;
 import com.gestionate.backend.evidences.domain.repository.EvidenceRepository;
@@ -31,6 +32,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ReportService implements IReportService {
 
+    private final INotificationService notificationService;
     private final ReportRepository reportRepository;
     private final CitizenRepository citizenRepository;
     private final IncidentTypeService incidentTypeService;
@@ -85,6 +87,11 @@ public class ReportService implements IReportService {
                 request.longitude());
 
         List<Evidence> savedEvidences = evidenceService.saveReportEvidences(savedReport, files);
+
+        notificationService.notifyReportStatusChanged(
+                savedReport.getCitizen().getUser(),
+                savedReport.getReportCode(),
+                savedReport.getStatus());
 
         return reportMapper.toResponse(savedReport, savedEvidences, savedLocation);
     }
