@@ -1,5 +1,10 @@
 package com.gestionate.backend.shared.application;
 
+import com.gestionate.backend.shared.infrastructure.mapping.MunicipalityMapper;
+import com.gestionate.backend.shared.interfaces.rest.dto.MunicipalityResponse;
+
+import java.util.Comparator;
+import java.util.List;
 import com.gestionate.backend.shared.application.util.TextNormalizer;
 import com.gestionate.backend.shared.domain.model.District;
 import com.gestionate.backend.shared.domain.model.Municipality;
@@ -12,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MunicipalityService implements IMunicipalityService {
 
+    private final MunicipalityMapper municipalityMapper;
     private final MunicipalityRepository municipalityRepository;
     private final DistrictService districtService;
 
@@ -74,5 +80,15 @@ public class MunicipalityService implements IMunicipalityService {
                 .build();
 
         return municipalityRepository.save(municipality);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MunicipalityResponse> findActiveMunicipalities() {
+        return municipalityRepository.findByActiveTrue()
+                .stream()
+                .sorted(Comparator.comparing(Municipality::getName))
+                .map(municipalityMapper::toResponse)
+                .toList();
     }
 }
