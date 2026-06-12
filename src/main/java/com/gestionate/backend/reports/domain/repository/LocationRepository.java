@@ -21,4 +21,8 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             Long districtId,
             ReportStatus status,
             Long incidentTypeId);
+
+    List<Location> findByDistrict_IdAndReport_StatusInOrderByReport_CreatedAtDesc(
+            Long districtId,
+            List<ReportStatus> statuses);
 }

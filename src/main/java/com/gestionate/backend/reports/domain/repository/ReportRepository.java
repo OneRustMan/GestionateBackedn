@@ -22,4 +22,8 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
             Long incidentTypeId);
 
     Optional<Report> findByIdAndCitizen_Id(Long reportId, Long citizenId);
+
+    List<Report> findByCitizen_District_IdAndStatusInOrderByCreatedAtDesc(
+            Long districtId,
+            List<ReportStatus> statuses);
 }
