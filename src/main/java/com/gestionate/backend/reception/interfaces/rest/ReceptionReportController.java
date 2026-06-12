@@ -68,8 +68,9 @@ public class ReceptionReportController {
     @Operation(summary = "Listar reportes derivados o atendidos")
     @GetMapping("/derived")
     public ResponseEntity<List<ReceptionReportInboxResponse>> findDerivedReports(
-            @RequestParam Long receptionistId) {
+            @RequestParam Long receptionistId,
+            @RequestParam(required = false) Long incidentTypeId) {
         return ResponseEntity.ok(
-                receptionReportService.findDerivedReports(receptionistId));
+                receptionReportService.findDerivedReports(receptionistId, incidentTypeId));
     }
 }
