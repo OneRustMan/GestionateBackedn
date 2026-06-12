@@ -101,12 +101,6 @@ public class ReceptionReportService implements IReceptionReportService {
 
         Report report = location.getReport();
 
-        if (!ReportStatus.RECEIVED.equals(report.getStatus())) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "El reporte ya no está disponible.");
-        }
-
         List<Evidence> evidences = evidenceRepository.findByReport_Id(report.getId());
 
         return receptionReportDetailMapper.toResponse(
