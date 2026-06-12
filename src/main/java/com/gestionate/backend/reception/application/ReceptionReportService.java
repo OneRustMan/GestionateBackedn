@@ -189,6 +189,32 @@ public class ReceptionReportService implements IReceptionReportService {
         return deriveReportMapper.toResponse(savedWorkOrder);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReceptionReportInboxResponse> findDerivedReports(Long receptionistId) {
+        MunicipalReceptionist receptionist = municipalReceptionistRepository.findById(receptionistId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Recepcionista municipal no encontrado."));
+
+        Long districtId = receptionist.getMunicipality().getDistrict().getId();
+
+        List<ReportStatus> statuses = List.of(
+                ReportStatus.DERIVED,
+                ReportStatus.ORDER_COMPLETED);
+
+        List<Location> locations = locationRepository
+                .findByDistrict_IdAndReport_StatusInOrderByReport_CreatedAtDesc(
+                        districtId,
+                        statuses);
+
+        return locations.stream()
+                .map(location -> receptionReportInboxMapper.toResponse(
+                        location.getReport(),
+                        location))
+                .toList();
+    }
+
     private String generateWorkOrderCode() {
         Long nextNumber = workOrderRepository.findTopByOrderByIdDesc()
                 .map(workOrder -> workOrder.getId() + 1)

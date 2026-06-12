@@ -21,4 +21,6 @@ public interface IReceptionReportService {
             Long receptionistId,
             Long reportId,
             DeriveReportRequest request);
+
+    List<ReceptionReportInboxResponse> findDerivedReports(Long receptionistId);
 }
