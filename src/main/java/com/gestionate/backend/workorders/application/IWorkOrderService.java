@@ -27,4 +27,8 @@ public interface IWorkOrderService {
             Long cleaningStaffId,
             Long workOrderId,
             CompleteWorkOrderRequest request);
+
+    List<WorkOrderResponse> findCompletedWorkOrders(
+            Long cleaningStaffId,
+            WorkOrderPriority priority);
 }

@@ -1,8 +1,11 @@
 package com.gestionate.backend.workorders.domain.repository;
 
 import com.gestionate.backend.workorders.domain.model.WorkOrder;
+import com.gestionate.backend.workorders.domain.model.WorkOrderPriority;
+import com.gestionate.backend.workorders.domain.model.WorkOrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
@@ -12,4 +15,13 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long> {
     boolean existsByReport_Id(Long reportId);
 
     Optional<WorkOrder> findByReport_Id(Long reportId);
+
+    List<WorkOrder> findByCleaningStaffIdAndStatusInOrderByCreatedAtDesc(
+            Long cleaningStaffId,
+            List<WorkOrderStatus> statuses);
+
+    List<WorkOrder> findByCleaningStaffIdAndStatusInAndPriorityOrderByCreatedAtDesc(
+            Long cleaningStaffId,
+            List<WorkOrderStatus> statuses,
+            WorkOrderPriority priority);
 }

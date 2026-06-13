@@ -71,7 +71,13 @@ public class WorkOrderService implements IWorkOrderService {
 
                     WorkOrder workOrder = workOrderOptional.get();
 
-                    if (!WorkOrderStatus.PENDING.equals(workOrder.getStatus())) {
+                    boolean isPendingAvailable = WorkOrderStatus.PENDING.equals(workOrder.getStatus())
+                            && workOrder.getCleaningStaffId() == null;
+
+                    boolean isInProgressAssignedToStaff = WorkOrderStatus.IN_PROGRESS.equals(workOrder.getStatus())
+                            && cleaningStaff.getId().equals(workOrder.getCleaningStaffId());
+
+                    if (!isPendingAvailable && !isInProgressAssignedToStaff) {
                         return null;
                     }
 
@@ -96,6 +102,54 @@ public class WorkOrderService implements IWorkOrderService {
                     case MEDIUM -> 2;
                     case LOW -> 3;
                 }))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkOrderResponse> findCompletedWorkOrders(
+            Long cleaningStaffId,
+            WorkOrderPriority priority) {
+        CleaningOperationsStaff cleaningStaff = cleaningOperationsStaffRepository.findById(cleaningStaffId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Personal operativo no encontrado."));
+
+        Long districtId = cleaningStaff.getMunicipality().getDistrict().getId();
+
+        List<WorkOrderStatus> statuses = List.of(
+                WorkOrderStatus.PARTIAL_ATTENTION,
+                WorkOrderStatus.COMPLETED);
+
+        List<WorkOrder> workOrders;
+
+        if (priority != null) {
+            workOrders = workOrderRepository.findByCleaningStaffIdAndStatusInAndPriorityOrderByCreatedAtDesc(
+                    cleaningStaffId,
+                    statuses,
+                    priority);
+        } else {
+            workOrders = workOrderRepository.findByCleaningStaffIdAndStatusInOrderByCreatedAtDesc(
+                    cleaningStaffId,
+                    statuses);
+        }
+
+        return workOrders.stream()
+                .map(workOrder -> {
+                    Location location = locationRepository.findByReport_Id(workOrder.getReport().getId())
+                            .orElse(null);
+
+                    if (location == null) {
+                        return null;
+                    }
+
+                    if (!districtId.equals(location.getDistrict().getId())) {
+                        return null;
+                    }
+
+                    return workOrderMapper.toResponse(workOrder, location);
+                })
+                .filter(response -> response != null)
                 .toList();
     }
 
