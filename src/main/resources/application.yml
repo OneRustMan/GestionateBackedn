@@ -38,6 +38,9 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
 
+  frontend:
+    register-url: ${FRONTEND_REGISTER_URL:http://localhost:4200/registro}
+
 
 security:
   jwt:

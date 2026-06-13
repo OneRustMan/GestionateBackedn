@@ -60,4 +60,33 @@ public class EmailService implements IEmailService {
 
         javaMailSender.send(message);
     }
+
+    @Override
+    public void sendContactAutoReply(String to, String name, String registerUrl) {
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(mailFrom);
+        message.setTo(to);
+        message.setSubject("Gracias por contactarte con Gestionate");
+        message.setText(
+                """
+                        Hola %s,
+
+                        Gracias por contactarte con Gestionate.
+
+                        Gestionate es una plataforma que permite reportar incidencias urbanas relacionadas con residuos, desmonte, objetos voluminosos, residuos en áreas públicas y otros problemas que afectan a la comunidad.
+
+                        Desde la plataforma podrás registrar reportes, adjuntar evidencias, indicar la ubicación de la incidencia y hacer seguimiento al estado de atención por parte de la municipalidad y el área operativa.
+
+                        Te invitamos a registrarte para crear tus reportes y recibir actualizaciones sobre su atención.
+
+                        Regístrate aquí:
+                        %s
+
+                        Equipo Gestionate
+                        """
+                        .formatted(name, registerUrl));
+
+        javaMailSender.send(message);
+    }
 }
