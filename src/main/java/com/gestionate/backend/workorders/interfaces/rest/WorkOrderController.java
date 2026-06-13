@@ -33,7 +33,6 @@ public class WorkOrderController {
     @GetMapping("/available")
     public ResponseEntity<List<WorkOrderResponse>> findAvailableWorkOrders(
             @RequestParam Long cleaningStaffId,
-
             @RequestParam(required = false) WorkOrderPriority priority) {
         return ResponseEntity.ok(
                 workOrderService.findAvailableWorkOrders(cleaningStaffId, priority));
@@ -80,5 +79,18 @@ public class WorkOrderController {
             @Valid @RequestBody CompleteWorkOrderRequest request) {
         return ResponseEntity.ok(
                 workOrderService.completeWorkOrder(cleaningStaffId, workOrderId, request));
+    }
+
+    @Operation(summary = "Ver órdenes completadas del área operativa")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Órdenes completadas obtenidas correctamente"),
+            @ApiResponse(responseCode = "404", description = "Personal operativo no encontrado")
+    })
+    @GetMapping("/completed")
+    public ResponseEntity<List<WorkOrderResponse>> findCompletedWorkOrders(
+            @RequestParam Long cleaningStaffId,
+            @RequestParam(required = false) WorkOrderPriority priority) {
+        return ResponseEntity.ok(
+                workOrderService.findCompletedWorkOrders(cleaningStaffId, priority));
     }
 }
