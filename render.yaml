@@ -62,7 +62,13 @@ services:
         value: smtp.gmail.com
 
       - key: MAIL_PORT
-        value: 587
+        value: 465
+
+      - key: MAIL_SSL_ENABLE
+        value: true
+
+      - key: MAIL_STARTTLS_ENABLE
+        value: false
 
       - key: MAIL_USERNAME
         sync: false
@@ -72,7 +78,6 @@ services:
 
       - key: MAIL_FROM
         sync: false
-
       - key: SUPABASE_URL
         sync: false
 
