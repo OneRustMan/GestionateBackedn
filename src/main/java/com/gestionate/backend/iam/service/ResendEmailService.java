@@ -1,32 +1,65 @@
 package com.gestionate.backend.iam.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-@Profile("!prod")
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+@Profile("prod")
 @Service
 @RequiredArgsConstructor
-public class EmailService implements IEmailService {
+public class ResendEmailService implements IEmailService {
 
-    private final JavaMailSender javaMailSender;
+    private static final String RESEND_EMAILS_URL = "https://api.resend.com/emails";
 
-    @Value("${mail.from}")
-    private String mailFrom;
+    private final ObjectMapper objectMapper;
+
+    @Value("${resend.api-key}")
+    private String resendApiKey;
+
+    @Value("${resend.from}")
+    private String resendFrom;
 
     @Override
     public void sendEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
+            ObjectNode payload = objectMapper.createObjectNode();
+            payload.put("from", resendFrom);
+            payload.putArray("to").add(to);
+            payload.put("subject", subject);
+            payload.put("text", body);
 
-        message.setFrom(mailFrom);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(RESEND_EMAILS_URL))
+                    .header("Authorization", "Bearer " + resendApiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
+                    .build();
 
-        javaMailSender.send(message);
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalStateException(
+                        "No se pudo enviar el correo con Resend. Status: "
+                                + response.statusCode()
+                                + ". Response: "
+                                + response.body());
+            }
+
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("El envío de correo fue interrumpido.", exception);
+        } catch (Exception exception) {
+            throw new IllegalStateException("No se pudo enviar el correo con Resend.", exception);
+        }
     }
 
     @Override

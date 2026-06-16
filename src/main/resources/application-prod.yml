@@ -52,3 +52,7 @@ security:
 
 mail:
   from: ${MAIL_FROM}
+
+resend:
+  api-key: ${RESEND_API_KEY}
+  from: ${RESEND_FROM:Gestionate <no-reply@gestionate.me>}
