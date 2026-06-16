@@ -86,3 +86,9 @@ services:
 
       - key: SUPABASE_BUCKET
         sync: false
+
+      - key: RESEND_API_KEY
+        sync: false
+
+      - key: RESEND_FROM
+        value: "Gestionate <no-reply@gestionate.me>"
