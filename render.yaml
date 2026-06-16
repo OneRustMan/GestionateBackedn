@@ -1,0 +1,83 @@
+databases:
+  - name: gestionate-db
+    databaseName: gestionate_db
+    user: gestionate
+    plan: free
+
+services:
+  - type: web
+    name: gestionate-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /v3/api-docs
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      - key: DB_HOST
+        fromDatabase:
+          name: gestionate-db
+          property: host
+
+      - key: DB_PORT
+        fromDatabase:
+          name: gestionate-db
+          property: port
+
+      - key: DB_NAME
+        fromDatabase:
+          name: gestionate-db
+          property: database
+
+      - key: DB_USERNAME
+        fromDatabase:
+          name: gestionate-db
+          property: user
+
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: gestionate-db
+          property: password
+
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: DDL_AUTO
+        value: update
+
+      - key: SHOW_SQL
+        value: false
+
+      - key: FORMAT_SQL
+        value: false
+
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      - key: FRONTEND_REGISTER_URL
+        sync: false
+
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+
+      - key: MAIL_PORT
+        value: 587
+
+      - key: MAIL_USERNAME
+        sync: false
+
+      - key: MAIL_PASSWORD
+        sync: false
+
+      - key: MAIL_FROM
+        sync: false
+
+      - key: SUPABASE_URL
+        sync: false
+
+      - key: SUPABASE_KEY
+        sync: false
+
+      - key: SUPABASE_BUCKET
+        sync: false
