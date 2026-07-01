@@ -1,5 +1,6 @@
 package com.gestionate.backend.ai.service;
 
+import com.gestionate.backend.ai.dto.CitizenSupportAiResponse;
 import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,6 +99,60 @@ public class GeminiAiService implements IAiService {
             throw new IllegalStateException(
                     "No se pudo generar la asistencia IA del reporte. Causa: " + exception.getMessage(),
                     exception);
+        }
+    }
+
+    public CitizenSupportAiResponse generateCitizenSupportAnswer(String prompt) {
+        if (!StringUtils.hasText(geminiApiKey)) {
+            throw new IllegalStateException("La API key de Gemini no está configurada.");
+        }
+
+        try {
+            String body = """
+                    {
+                      "contents": [
+                        {
+                          "parts": [
+                            {
+                              "text": %s
+                            }
+                          ]
+                        }
+                      ],
+                      "generationConfig": {
+                        "temperature": 0.2,
+                        "responseMimeType": "application/json"
+                      }
+                    }
+                    """.formatted(objectMapper.writeValueAsString(prompt));
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(GEMINI_URL.formatted(geminiModel, geminiApiKey)))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalStateException(
+                        "No se pudo obtener respuesta de Gemini. Status: "
+                                + response.statusCode()
+                                + ". Response: "
+                                + response.body());
+            }
+
+            String aiText = extractGeminiText(response.body());
+            String cleanJson = cleanJson(aiText);
+
+            return objectMapper.readValue(cleanJson, CitizenSupportAiResponse.class);
+
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("La respuesta IA fue interrumpida.", exception);
+        } catch (Exception exception) {
+            throw new IllegalStateException("No se pudo generar la respuesta del asistente IA.", exception);
         }
     }
 
