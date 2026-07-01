@@ -11,6 +11,18 @@ services:
     volumes:
       - gestionate_pgdata:/var/lib/postgresql/data
 
+  postgres_ai:
+    image: pgvector/pgvector:pg16
+    container_name: gestionate_pgvector
+    environment:
+      POSTGRES_DB: gestionate_ai_db
+      POSTGRES_USER: gestionate_ai_user
+      POSTGRES_PASSWORD: gestionate_ai_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - gestionate_ai_pgdata:/var/lib/postgresql/data
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: gestionate_pgadmin
@@ -18,9 +30,11 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@gestionate.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - '8082:80'
+      - "8082:80"
     depends_on:
       - postgres
+      - postgres_ai
 
 volumes:
   gestionate_pgdata:
+  gestionate_ai_pgdata:

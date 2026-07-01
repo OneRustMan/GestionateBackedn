@@ -2,6 +2,10 @@ spring:
   application:
     name: gestionate-backend
 
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/gestionate_db}
     username: ${DATABASE_USERNAME:gestionate_user}
@@ -53,3 +57,12 @@ ai:
   gemini:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-3.1-flash-lite}
+    embedding-model: ${GEMINI_EMBEDDING_MODEL:gemini-embedding-001}
+    embedding-dimensions: ${GEMINI_EMBEDDING_DIMENSIONS:768}
+
+  vector:
+    datasource:
+      url: ${AI_DATABASE_URL:jdbc:postgresql://localhost:5434/gestionate_ai_db}
+      username: ${AI_DATABASE_USERNAME:gestionate_ai_user}
+      password: ${AI_DATABASE_PASSWORD:gestionate_ai_password}
+      driver-class-name: org.postgresql.Driver
